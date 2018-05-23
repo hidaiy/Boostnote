@@ -18,10 +18,10 @@ class MarkdownEditor extends React.Component {
     this.supportMdSelectionBold = [16, 17, 186]
 
     this.state = {
-      status: 'PREVIEW',
+      status: props.isLocked ? 'CODE' : 'PREVIEW',
       renderValue: props.value,
       keyPressed: new Set(),
-      isLocked: false
+      isLocked: props.isLocked
     }
 
     this.lockEditorCode = () => this.handleLockEditor()

@@ -40,8 +40,8 @@ class MarkdownNoteDetail extends React.Component {
         title: '',
         content: ''
       }, props.note),
-      isLockButtonShown: false,
-      isLocked: false,
+      isLockButtonShown: props.config.editor.isLockButtonShown,
+      isLocked: props.config.editor.isLocked,
       editorType: props.config.editor.type
     }
     this.dispatchTimer = null
@@ -237,7 +237,11 @@ class MarkdownNoteDetail extends React.Component {
   handleLockButtonMouseDown (e) {
     e.preventDefault()
     ee.emit('editor:lock')
-    this.setState({ isLocked: !this.state.isLocked })
+    this.setState({ isLocked: !this.state.isLocked }, () => {
+      const newConfig = Object.assign({}, this.props.config)
+      newConfig.editor.isLocked = this.state.isLocked
+      ConfigManager.set(newConfig)
+    });
     if (this.state.isLocked) this.focus()
   }
 
@@ -251,11 +255,12 @@ class MarkdownNoteDetail extends React.Component {
 
   handleToggleLockButton (event, noteStatus) {
     // first argument event is not used
-    if (this.props.config.editor.switchPreview === 'BLUR' && noteStatus === 'CODE') {
-      this.setState({isLockButtonShown: true})
-    } else {
-      this.setState({isLockButtonShown: false})
-    }
+    const isLockButtonShown = (this.props.config.editor.switchPreview === 'BLUR' && noteStatus === 'CODE')
+    this.setState({isLockButtonShown: isLockButtonShown}, () => {
+      const newConfig = Object.assign({}, this.props.config)
+      newConfig.editor.isLockButtonShown = isLockButtonShown
+      ConfigManager.set(newConfig)
+    })
   }
 
   handleFocus (e) {
@@ -290,6 +295,7 @@ class MarkdownNoteDetail extends React.Component {
         value={note.content}
         storageKey={note.storage}
         noteKey={note.key}
+        isLocked={this.state.isLocked}
         onChange={this.handleUpdateContent.bind(this)}
         ignorePreviewPointerEvents={ignorePreviewPointerEvents}
       />
@@ -381,7 +387,8 @@ class MarkdownNoteDetail extends React.Component {
             </button>
 
           return (
-            this.state.isLockButtonShown ? lockButtonComponent : ''
+            // this.state.isLockButtonShown ? lockButtonComponent : ''
+            this.state.editorType === 'EDITOR_PREVIEW' ? lockButtonComponent : ''
           )
         })()}
 
